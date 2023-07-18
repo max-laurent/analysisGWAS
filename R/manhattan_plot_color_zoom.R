@@ -1,4 +1,4 @@
-#' Manhattan Plot with specific markers in color
+#' Manhattan Plot with specific markers in color with zoom
 #'
 #' Creates a basic Manhattan plot for genome-wide association studies (GWAS) with SNPs in specific colors.
 #'
@@ -27,7 +27,7 @@
 #'                     chr_col = "Chromosome", color_chr = c("gray", "darkgray"),
 #'                     save_time = TRUE, GWAS_name = NULL, discard_chr = 11,
 #'                     MAF_filter = 0.05, MAF_col = "MAF")
-manhattan_plot_color <- function(data, pos_markers = "Marker_Position", name_markers = "Marker_Name", y = "LogPval", chr_col = "Chromosome", color_col =  NULL, GWAS_name = NULL, discard_chr = 11, MAF_filter = 0.05, MAF_col = "MAF", save_time = TRUE, list_keep = NULL, chr = NULL, start = NULL, stop = NULL){
+manhattan_plot_color_zoom <- function(data, pos_markers = "Marker_Position", name_markers = "Marker_Name", y = "LogPval", chr_col = "Chromosome", color_col =  NULL, GWAS_name = NULL, discard_chr = 11, MAF_filter = 0.05, MAF_col = "MAF", save_time = TRUE, list_keep = NULL, chr = NULL, start = NULL, stop = NULL){
 
   assertthat::assert_that(length(color_col) <= 8 | is.null(color_col))
 
