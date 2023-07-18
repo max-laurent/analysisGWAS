@@ -1,13 +1,13 @@
 #' Manhattan Plot with specific markers in color
 #'
-#' Creates a basic Manhattan plot for genome-wide association studies (GWAS).
+#' Creates a basic Manhattan plot for genome-wide association studies (GWAS) with SNPs in specific colors.
 #'
 #' @param data Input data containing information for the plot. From GNPasso.
 #' @param pos_markers Name of the column in the `data` that contains marker positions.
 #' @param name_markers The name of the column in the `data` that contains marker names.
 #' @param y Name of the column in the `data` that contains the y-axis values (usually -log10(p-value)).
 #' @param chr_col Name of the column in the `data` that contains chromosome information.
-#' @param color_col A vector specifying the colors to be used for different SNPs.
+#' @param color_col Name of the column containing the different categories to color the SNPs.
 #' @param save_time A logical value indicating whether to discard 95% of the SNP that are not significant
 #' @param GWAS_name The name of the GWAS being conducted.
 #' @param discard_chr The chromosome to be discarded from the plot.
@@ -26,16 +26,31 @@
 #'                     MAF_filter = 0.05, MAF_col = "MAF")
 manhattan_plot_color <- function(data, pos_markers = "Marker_Position", name_markers = "Marker_Name", y = "LogPval", chr_col = "Chromosome", color_col =  NULL, save_time = TRUE, GWAS_name = NULL, discard_chr = 11, MAF_filter = 0.05, MAF_col = "MAF", list_keep = NULL){
 
+  assertthat::assert_that(length(color_col) <= 8 | is.null(color_col))
+
   data <- process_run(data = data, pos_markers = pos_markers, y = y, chr_col = chr_col, save_time = save_time, discard_chr = discard_chr, MAF_filter = MAF_filter, MAF_col = MAF_col, GWAS_name = GWAS_name, list_keep = list_keep)
   axis <- calc_axis(data = data, chr_col = "Chromosome")
-  ncol <- length(unique(data[[color_col]]))-2
-  data[[color_col]] <- as.factor(data[[color_col]])
   max_y <- base::ceiling((max(data[[y]]) + 4)/ 5 * 5)
   pal <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#666666")
 
-  ggplot2::ggplot(data, aes(x = Marker_Position_cum, y= .data[[y]])) +
-    ggplot2::geom_point(aes(color = .data[[color_col]]), alpha = 0.8, size = 0.4) +
-    ggplot2::scale_color_manual(values = c(pal[1:ncol], "gray", "darkgray")) +
+
+  if(!is.null(color_col)){
+    # Create a list containing the information for the mapping of the data
+    mapping <- aes(x = Marker_Position_cum, y= .data[[y]], color = .data[[color_col]])
+    ncol <- length(unique(data[[color_col]]))-2
+    data[[color_col]] <- as.factor(data[[color_col]])
+  } else {
+    # Create a list containing the information for the mapping of the data
+    mapping <- aes(x = Marker_Position_cum, y= .data[[y]], color = as.factor(.data[[chr_col]]))
+
+  }
+
+
+
+  ggplot2::ggplot(data, mapping = mapping) +
+    ggplot2::geom_point(alpha = 0.8, size = 0.4) +
+    {if(!is.null(color_col)) ggplot2::scale_color_manual(values = c(pal[1:ncol], "gray", "darkgray"))} +
+    {if(is.null(color_col)) ggplot2::scale_color_manual(values = rep(c("gray", "darkgray"), length(levels(as.factor(data[[chr_col]])))))} +
     ggplot2::geom_hline(yintercept = 5, linetype = "dashed", color = "red") +
     # custom X axis:
     ggplot2::scale_x_continuous(label = axis[[chr_col]], breaks= axis$center, expand = c(0.01,0.01)) +
